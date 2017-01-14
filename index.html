@@ -18,63 +18,96 @@
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script>
 
-  var BP_SEARCH_SERVER = "https://bioportal.bioontology.org";
-  
+  $( function() {
 
-  //https://bioportal.bioontology.org/search/json_search/?q=adrenal&ontologies=SNOMEDCT&response=json
-
-    /*function requestData(q) {
-        if (!options.matchCase) q = q.toLowerCase();
-        var data = options.cacheLength ? loadFromCache(q) : null;
-        // recieve the cached data
-        if (data) {
-          receiveData(q, data);
-        // if an AJAX url has been supplied, try loading the data now
-        } else if( (typeof options.url == "string") && (options.url.length > 0) ){
-          $.getJSON(makeUrl(q)+"&response=json&callback=?", function(data) {
-    //                alert(data.data)
-            data = parseData(data.data);
-            addToCache(q, data);
-            receiveData(q, data);
-          });
-        // if there's been no data found, remove the loading class
-        } else {
-          $input.removeClass(options.loadingClass);
+    // function log( message ) {
+    //   $( "<div>" ).text( message ).prependTo( "#log" );
+    //   $( "#log" ).scrollTop( 0 );
+    // }
+      function parseData(data) {
+        if (!data) return null;
+        var parsed = [];
+        var rows = data.split("~!~");
+        for (var i=0; i < rows.length; i++) {
+          var row = $.trim(rows[i]);
+          if (row) {
+            consolte.log(parsed);
+            parsed[parsed.length] = row.split("|")[5];
+          }
         }
+        return parsed;
       };
 
-      function makeUrl(q) {
-        var url = options.url + "?q=" + encodeURI(q);
-        for (var i in options.extraParams) {
-          url += "&" + i + "=" + encodeURI(options.extraParams[i]);
-        }
-        return url;
-      };*/
+    // function split(val) {
+    //   return val.split( /,\s*/ );
+    // }
 
-  $( function() {
-    function log( message ) {
-      $( "<div>" ).text( message ).prependTo( "#log" );
-      $( "#log" ).scrollTop( 0 );
-    }
- 
-    $( "#birds" ).autocomplete({
-      source: function(request,response) {
-        response = $.ajax({
-          url:"https://bioportal.bioontology.org/search/json_search/?q=" + request.term + "&ontologies=SNOMEDCT&response=jsonp",
-          dataType: "jsonp"
-        })
-      },
-      minLength: 2,
-      select: function( event, ui ) {
-        log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+    // function extractLast(term) {
+    //   return split(term).pop();
+    // }
+
+      // .on("keydown",function(event) {
+      // if(event.keyCode === $.ui.keyCode.TAB &&
+      //    $(this).autocomplete("instance").menu.active){
+      //   event.preventDefault();
+      //   }
+      // }
+      // )
+    $( "#log" ).autocomplete(
+        function(request,response) {
+          $.getJSON("https://bioportal.bioontology.org/search/json_search/?q=" + encodeURI(request.term) + "&ontologies=SNOMEDCT&response=json&callback=?"),
+        //   $.getJSON({
+        //     url: "https://bioportal.bioontology.org/search/json_search/",
+        //     data: {
+        //       q: (request.term),
+        //       ontologies: "SNOMEDCT",
+        //       format: "jsonp"
+        //     }
+        //     // dataType: 'jsonp'
+        //   }
+        //   )
+        // },
+          function(data) {
+            data = parseData(data.data)
+            console.log(data);
+            response(data);
+          }
       }
+      )
+//error handling (i.e. success function)
+      // minLength: 3,
+      // search: function() {
+      //   console.log(this.value);
+      //   var q = extractLast(this.value);
+      //   if(q.length < 2) {
+      //     return false;
+      //   }
+      // },
+//       focus: function() {
+//         return false
+//       },
+//       select: function( event, ui ) {
+//         var terms = split(this.value);
+//         terms.pop();
+//         terms.push(ui.item.value);
+//         terms.push("");
+//         this.value = terms.join(", ");
+//         return false;
+// //        log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+//       }
     });
-  } );
+  // });
   </script>
 </head>
 <body>
+
+<div>
+  Test Autocomplete:
+  <div contenteditable="true" id='log' class="ui-widget-content">
+  </div>
+</div>
  
-<div class="ui-widget">
+<!-- <div class="ui-widget">
   <label for="birds">Birds: </label>
   <input id="birds">
 </div>
@@ -82,7 +115,7 @@
 <div class="ui-widget" style="margin-top:2em; font-family:Arial">
   Result:
   <div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div>
-</div>
+</div> -->
  
  
 </body>
