@@ -59,7 +59,10 @@
  
     $( "#birds" ).autocomplete({
       source: function(request,response) {
-        response = $.getJSON("https://bioportal.bioontology.org/search/json_search/?q=" + request.term + "&ontologies=SNOMEDCT&response=jsonp")
+        response = $.ajax({
+          url:"https://bioportal.bioontology.org/search/json_search/?q=" + request.term + "&ontologies=SNOMEDCT&response=jsonp",
+          dataType: "jsonp"
+        })
       },
       minLength: 2,
       select: function( event, ui ) {
