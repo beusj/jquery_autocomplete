@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery UI Autocomplete - Remote datasource</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  
+<!--   <link rel="stylesheet" href="/resources/demos/style.css">
+  <style>
+  .ui-autocomplete-loading {
+    background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+  
+  </style> -->
+
+  
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+
+  var BP_SEARCH_SERVER = "https://bioportal.bioontology.org";
+  
+
+  //https://bioportal.bioontology.org/search/json_search/?q=adrenal&ontologies=SNOMEDCT&response=json
+
+    /*function requestData(q) {
+        if (!options.matchCase) q = q.toLowerCase();
+        var data = options.cacheLength ? loadFromCache(q) : null;
+        // recieve the cached data
+        if (data) {
+          receiveData(q, data);
+        // if an AJAX url has been supplied, try loading the data now
+        } else if( (typeof options.url == "string") && (options.url.length > 0) ){
+          $.getJSON(makeUrl(q)+"&response=json&callback=?", function(data) {
+    //                alert(data.data)
+            data = parseData(data.data);
+            addToCache(q, data);
+            receiveData(q, data);
+          });
+        // if there's been no data found, remove the loading class
+        } else {
+          $input.removeClass(options.loadingClass);
+        }
+      };
+
+      function makeUrl(q) {
+        var url = options.url + "?q=" + encodeURI(q);
+        for (var i in options.extraParams) {
+          url += "&" + i + "=" + encodeURI(options.extraParams[i]);
+        }
+        return url;
+      };*/
+
+  $( function() {
+    function log( message ) {
+      $( "<div>" ).text( message ).prependTo( "#log" );
+      $( "#log" ).scrollTop( 0 );
+    }
+ 
+    $( "#birds" ).autocomplete({
+      source: function(request,response) {
+        response = $.getJSON("https://bioportal.bioontology.org/search/json_search/?q=" + request.term + "&ontologies=SNOMEDCT&response=jsonp")
+      },
+      minLength: 2,
+      select: function( event, ui ) {
+        log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+      }
+    });
+  } );
+  </script>
+</head>
+<body>
+ 
+<div class="ui-widget">
+  <label for="birds">Birds: </label>
+  <input id="birds">
+</div>
+ 
+<div class="ui-widget" style="margin-top:2em; font-family:Arial">
+  Result:
+  <div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div>
+</div>
+ 
+ 
+</body>
+</html>
