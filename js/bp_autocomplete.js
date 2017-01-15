@@ -2,43 +2,7 @@
   var BP_SEARCH_SERVER = "http://data.bioontology.org";
   var LIST_ONTOLOGY = "SNOMEDCT"
   
-
-  //https://bioportal.bioontology.org/search/json_search/?q=adrenal&ontologies=SNOMEDCT&response=json
-
-    /*function requestData(q) {
-        if (!options.matchCase) q = q.toLowerCase();
-        var data = options.cacheLength ? loadFromCache(q) : null;
-        // recieve the cached data
-        if (data) {
-          receiveData(q, data);
-        // if an AJAX url has been supplied, try loading the data now
-        } else if( (typeof options.url == "string") && (options.url.length > 0) ){
-          $.getJSON(makeUrl(q)+"&response=json&callback=?", function(data) {
-    //                alert(data.data)
-            data = parseData(data.data);
-            addToCache(q, data);
-            receiveData(q, data);
-          });
-        // if there's been no data found, remove the loading class
-        } else {
-          $input.removeClass(options.loadingClass);
-        }
-      };
-
-      function makeUrl(q) {
-        var url = options.url + "?q=" + encodeURI(q);
-        for (var i in options.extraParams) {
-          url += "&" + i + "=" + encodeURI(options.extraParams[i]);
-        }
-        return url;
-      };*/
-// http://stackoverflow.com/questions/20623123/links-in-contenteditable-div
-
   $( function() {
-    function log( message ) {
-      $( "<div>" ).text( message ).prependTo( "#log" );
-      $( "#log" ).scrollTop( 0 );
-    }
 
     function parseData(data) {
       if (!data) return null;
@@ -57,46 +21,89 @@
       return parsed;
     }
 
+    function split( val ) {
+      var test = val.split( /;\s*/ );
+      // console.log(test);
+      return test;
+    }
 
-    $( "#ac" ).autocomplete({
-      source: function(request,response) {
-        $.getJSON(BP_SEARCH_SERVER +
-          "/search?q=" +  
-          encodeURI(request.term) +
-          "&ontologies="  +
-          encodeURI(LIST_ONTOLOGY) +
-          "&suggest=true" +
-          "&format=jsonp" +
-          "&callback=?"
-          // apikey: encodeURI("879f0065-476f-4769-8765-3d8a44a6dde1")
-        ,
-        function(data) {
-            // console.log(data);
-            data = parseData(data.collection);
-            // console.log(data);
-            response(data);
-          }
-        )
-      },
-      minLength: 3
-      ,
-      // select: function(event, ui) {
-      //   ("<a href=" + ui.item.url + ">" + ui.item.value + "</a>")
-      // }
-      select: function( event, ui ) {
-        $("#ac").html("<span contenteditable=false style='color:blue' id=" +
+    function extractLast( term ) {
+      return split( term ).pop();
+    }
+
+    function removeLast( term ) {
+      return split( term ).splice(0,-1);
+    }
+
+
+
+
+    //Still need to figure out how to append new results
+
+    function formatSelect ( event, ui ) {
+      // var terms = split( this );
+      var prev = split($(this).html()).slice(0,-1)
+
+        var spanForm = "<span contenteditable=false style='color:blue' id=" +
           encodeURI(ui.item.id) +
           " uri=" +
-          ui.item.uri +
+          encodeURI(ui.item.uri) +
           " cui=" +
-          ui.item.cui +
+          encodeURI(ui.item.cui) +
           " synonym=" +
           encodeURI(ui.item.synonym) +
            ">" +
-          ui.item.value + "</a>");
+          ui.item.value + 
+          "</span>" +
+          ("; ") ;
+        // if (spans.length == 0) {
+      prev.push(spanForm);
+
+          $(this).html(prev.join("; "));
+        // } else {
+          // $(this).html(me[0].outerHTML + spanForm + "; ")
+          // $(this).append(spanForm + "; ")
+          // spans.append(spanForm + "; ")
+        // }
         console.log($("#ac").html())
         return false;
-        // $("#log").text(ui.item.value);
       }
-    });
+
+    $( "#ac" )
+      .on( "keydown", function( event ) {
+        if ( event.keyCode === $.ui.keyCode.TAB &&
+            $( this ).autocomplete( "instance" ).menu.active ) {
+          event.preventDefault();
+        }
+      })
+      .autocomplete({
+        source: function(request,response) {
+          $.getJSON(BP_SEARCH_SERVER +
+            "/search?q=" +  
+            encodeURI(split(request.term).pop()) +
+            "&ontologies="  +
+            encodeURI(LIST_ONTOLOGY) +
+            "&suggest=true" +
+            "&format=jsonp" +
+            "&callback=?"
+            // apikey: encodeURI("879f0065-476f-4769-8765-3d8a44a6dde1")
+          ,
+          function(data) {
+              // console.log(data);
+              data = parseData(data.collection);
+              // console.log(data);
+              response(data);
+            }
+          )
+        },
+        minLength: 3
+        ,
+        focus: function() {
+            // prevent value inserted on focus
+            return false;
+        }
+        ,
+        select: formatSelect
+      }
+    );
   })
