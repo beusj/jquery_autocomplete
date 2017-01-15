@@ -50,6 +50,7 @@
         }
         return url;
       };*/
+// http://stackoverflow.com/questions/20623123/links-in-contenteditable-div
 
   $( function() {
     function log( message ) {
@@ -60,21 +61,30 @@
         if (!data) return null;
         var parsed = [];
         var rows = data.split("~!~");
+        // var result = {}
         for (var i=0; i < rows.length; i++) {
           var row = $.trim(rows[i]);
+          result = {};
           if (row) {
-            parsed[parsed.length] = row.split("|")[5];
+            var line = row.split("|");
+            // parsed[parsed.length] = row.split("|");
+            // result[parsed[5]] = parsed[1]
+            result['id'] = line[5];
+            result['value'] = line[5]
+            result['url'] = line[1];
+            // console.log({i,result});
+            parsed.push(result)
           }
         }
         return parsed;
       };
 
-    $( "#log" ).autocomplete({
+    $( "#ac" ).autocomplete({
       source: function(request,response) {
         $.getJSON("https://bioportal.bioontology.org/search/json_search/?q=" + encodeURI(request.term) + "&ontologies=SNOMEDCT&response=json&callback=?",
           function(data) {
             data = parseData(data.data)
-            console.log(data);
+            // console.log(data);
             response(data);
           }
           )
@@ -88,9 +98,16 @@
       //   }
       // )
       },
-      minLength: 3,
+      minLength: 3
+      ,
+      // select: function(event, ui) {
+      //   ("<a href=" + ui.item.url + ">" + ui.item.value + "</a>")
+      // }
       select: function( event, ui ) {
-        log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+        $("#ac").html("<span url=" + ui.item.url + ">" + ui.item.value + "</a>");
+        console.log($("#ac").html())
+        return false;
+        // $("#log").text(ui.item.value);
       }
     });
   })
@@ -98,9 +115,9 @@
 </head>
 <body>
 
-<div>
-  Test Autocomplete:
-  <div contenteditable="true" id='log' class="ui-widget-content">
+<div class="ui-widget" style="margin-top:2em; font-family:Arial">
+  Bioportal Autocomplete:
+  <div contenteditable="true" id='ac' class="ui-widget-content" style="height: 50px;width: 500px; overflow: auto;">
   </div>
 </div>
  
