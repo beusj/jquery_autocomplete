@@ -2,7 +2,7 @@
 //#to-do
 // - generalize to other content types
   var BP_SEARCH_SERVER = "https://data.bioontology.org";
-  var LIST_ONTOLOGY = "SNOMEDCT";
+  var LIST_ONTOLOGY = "ICD10";
   
   $( function() {
 
