@@ -1,4 +1,6 @@
-
+//autcomplete function
+//#to-do
+// - generalize to other content types
   var BP_SEARCH_SERVER = "http://data.bioontology.org";
   var LIST_ONTOLOGY = "SNOMEDCT";
   
@@ -58,7 +60,7 @@
     function formatSelect ( event, ui ) {
         var prev = split($(this).html()).slice(0,-1);
 
-        var spanForm = "<span contenteditable=false style='color:blue' id=" +
+        var spanForm = "<span class='diagnosis' contenteditable=false style='color:blue' id=" +
           encodeURI(ui.item.id) +
           " uri=" +
           encodeURI(ui.item.uri) +
@@ -74,8 +76,6 @@
         prev.push(spanForm);
 
         $(this).html(prev.join("; "));
-        // console.log($("#ac").html());
-        // console.log($(this).text().length);
         placeCaretAtEnd($(this).get(0));
         return false;
       }
@@ -108,9 +108,6 @@
         },
         minLength: 3,
         focus: function() {
-            // prevent value inserted on focus
-            // var strLength = $(this).val().length;
-            // $("ac").setSelectionRange(strLength,strLength)
             return false;
         },
         select: formatSelect
