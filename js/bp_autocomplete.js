@@ -1,3 +1,4 @@
+
 //autcomplete function
 //#to-do
 // - generalize to other content types
@@ -16,8 +17,10 @@
         result.id = line.prefLabel;
         result.value = line.prefLabel;
         result.uri = line["@id"];
-        result.cui = (line.cui) ? line.cui[0]:"";
-        result.synonym = (line.synonym) ? line.synonym[0]:""; //if not an avaiolable property, leave blank
+        var ontcode = line["@id"].split(/\//).pop(); //this might not be reliable, depends on url being formatted with ID (i.e. ICD10 code) at end of URL
+        result.ontcode = (ontcode) ? ontcode:'';
+        result.cui = (line.cui) ? line.cui[0]:'';
+        result.synonym = (line.synonym) ? line.synonym[0]:''; //if not an avaiolable property, leave blank
         parsed.push(result);
       }
       return parsed;
@@ -60,20 +63,60 @@
     function formatSelect ( event, ui ) {
         var prev = split($(this).html()).slice(0,-1);
 
+        // create programatically as jquery object?
+        // var spanForm = $("<span />").addClass("diagnosis"
+        //   ).attr({
+        //   contenteditable: false,
+        //   style: 'color:blue',
+        //   id: encodeURI(ui.item.id)
+        // }).data({
+        //   uri: encodeURI(ui.item.uri),
+        //   cui: encodeURI(ui.item.cui),
+        //   ontcode: encodeURI(ui.item.ontcode)          
+        // }
+        // ).html();
+
+        // console.log(spanForm);
+
         var spanForm = "<span class='diagnosis' contenteditable=false style='color:blue' id=" +
           encodeURI(ui.item.id) +
-          " uri=" +
+          " data-uri=" +
           encodeURI(ui.item.uri) +
-          " cui=" +
+          " data-cui=" +
           encodeURI(ui.item.cui) +
-          " synonym=" +
-          encodeURI(ui.item.synonym) +
+          " data-ontcode=" +
+          encodeURI(ui.item.ontcode) +
+          // " data-synonym=" +
+          // encodeURI(ui.item.synonym) +
            ">" +
           ui.item.value + 
           "</span>" +
           ("; ") ;
         
         prev.push(spanForm);
+
+        //mouse over action
+        $("body").on('mouseenter',"div.ui-widget #ac span.diagnosis",
+          function (e) {
+          $('<div />', {
+          'class': 'tip',
+          text: "ICD10: " + $(this).data('ontcode'),
+          css: {
+            position: 'fixed',
+            top: e.pageY-22,
+            left: e.pageX+2,
+            border: '1px solid red',
+            background: 'yellow'        
+          }
+          }).appendTo(this);
+          return false;
+          }
+        ).on('mouseleave',"div.ui-widget #ac span.diagnosis",
+          function (e) {
+          $('.tip',this).remove();
+          return false;
+          }
+        );
 
         $(this).html(prev.join("; "));
         placeCaretAtEnd($(this).get(0));
@@ -99,7 +142,7 @@
             "&format=jsonp" +
             "&callback=?",
           function(data) {
-              // console.log(data);
+              console.log(data);
               data = parseData(data.collection);
               // console.log(data);
               response(data);
