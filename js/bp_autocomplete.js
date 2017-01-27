@@ -1,51 +1,71 @@
-
 //autcomplete function
 //#to-do
 // - generalize to other content types
-  var BP_SEARCH_SERVER = "https://data.bioontology.org";
-  var LIST_ONTOLOGY = "ICD10";
-  
-  $( function() {
+var BP_SEARCH_SERVER = "https://data.bioontology.org";
+var LIST_ONTOLOGY = "ICD10";
+//API Reference http://data.bioontology.org/documentation#Class
+
+$(function() {
 
     function parseData(data) {
-      if (!data) return null;
-      var parsed = [];
-      // data = data.responseJSON.collection
-      for (var i=0; i < data.length; i++) {
-        result = {};
-        var line = data[i];
-        result.id = line.prefLabel;
-        result.value = line.prefLabel;
-        result.uri = line["@id"];
-        var ontcode = line["@id"].split(/\//).pop(); //this might not be reliable, depends on url being formatted with ID (i.e. ICD10 code) at end of URL
-        result.ontcode = (ontcode) ? ontcode:'';
-        result.cui = (line.cui) ? line.cui[0]:'';
-        result.synonym = (line.synonym) ? line.synonym[0]:''; //if not an avaiolable property, leave blank
-        parsed.push(result);
-      }
-      return parsed;
+        if (!data) return null;
+        var parsed = [];
+        // data = data.responseJSON.collection
+        for (var i = 0; i < data.length; i++) {
+            result = {};
+            var line = data[i];
+            result.id = line.prefLabel; //prefLabel is preference label (preferred name from bioportal)
+            result.value = line.prefLabel;
+            result.uri = line["@id"]; //url to class object, contains information about ontology and ontology code in url
+            var ontcode = line["@id"].split(/\//).pop(); //this might not be reliable, depends on url being formatted with ID (i.e. ICD10 code) at end of URL
+            //note that this parser currently only works with single ontologies
+            result.ontcode = (ontcode) ? ontcode : ''; //if exists, make it that; else if null than make a blank string
+            result.cui = (line.cui) ? line.cui[0] : ''; //concept unique identifier specific to bioportal
+            result.synonym = (line.synonym) ? line.synonym[0] : ''; //if not an available property, leave blank
+            parsed.push(result); //add results from most recent iteration to parsed array
+        }
+        return parsed;
     }
 
-    function split( val ) {
-      var test = val.split( /;\s*/ );
-      // console.log(test);
-      return test;
+    function split_semi(val) {
+        var test = val.split(/;\s*/); //split on spaces or semicolon, used further down
+        // console.log(test);
+        return test;
     }
 
-    function extractLast( term ) {
-      return split( term ).pop();
+    function extractLast(term) { //pulls out text at end of content after most semicolon
+        return split_semi(term).pop();
     }
 
-    function removeLast( term ) {
-      return split( term ).splice(0,-1);
+    function removeLast(term) { //gets rid of everything after last semicolon
+        return split_semi(term).splice(0, -1);
     }
 
-// return caret to end of line
-// http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
+    //http://stackoverflow.com/questions/16736680/get-caret-position-in-contenteditable-div-including-tags
+    function getCaretCharacterOffsetWithin(element) {
+        var caretOffset = 0;
+    // if (typeof window.getSelection != "undefined") {
+    //     var range = window.getSelection().getRangeAt(0);
+    //     var preCaretRange = range.cloneRange();
+    //     preCaretRange.selectNodeContents(element);
+    //     preCaretRange.setEnd(range.endContainer, range.endOffset);
+    //     caretOffset = preCaretRange.toString().length;
+    // } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
+        var textRange = document.selection.createRange();
+        var preCaretTextRange = document.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        // caretOffset = preCaretTextRange.text.length;
+    // }
+    return caretOffset;
+    };
+
+    // return caret to end of line
+    // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
     function placeCaretAtEnd(el) {
         el.focus();
-        if (typeof window.getSelection != "undefined"
-                && typeof document.createRange != "undefined") {
+        if (typeof window.getSelection != "undefined" &&
+            typeof document.createRange != "undefined") {
             var range = document.createRange();
             range.selectNodeContents(el);
             range.collapse(false);
@@ -60,8 +80,8 @@
         }
     }
 
-    function formatSelect ( event, ui ) {
-        var prev = split($(this).html()).slice(0,-1);
+    function formatSelect(event, ui) {
+        var prev = split_semi($(this).html()).slice(0, -1);
 
         // create programatically as jquery object?
         // var spanForm = $("<span />").addClass("diagnosis"
@@ -72,88 +92,99 @@
         // }).data({
         //   uri: encodeURI(ui.item.uri),
         //   cui: encodeURI(ui.item.cui),
-        //   ontcode: encodeURI(ui.item.ontcode)          
+        //   ontcode: encodeURI(ui.item.ontcode)
         // }
         // ).html();
 
         // console.log(spanForm);
 
         var spanForm = "<span class='diagnosis' contenteditable=false style='color:blue' id=" +
-          encodeURI(ui.item.id) +
-          " data-uri=" +
-          encodeURI(ui.item.uri) +
-          " data-cui=" +
-          encodeURI(ui.item.cui) +
-          " data-ontcode=" +
-          encodeURI(ui.item.ontcode) +
-          // " data-synonym=" +
-          // encodeURI(ui.item.synonym) +
-           ">" +
-          ui.item.value + 
-          "</span>" +
-          ("; ") ;
-        
+            encodeURI(ui.item.id) +
+            " data-uri=" +
+            encodeURI(ui.item.uri) +
+            " data-cui=" +
+            encodeURI(ui.item.cui) +
+            " data-ontcode=" +
+            encodeURI(ui.item.ontcode) +
+            // " data-synonym=" +
+            // encodeURI(ui.item.synonym) +
+            ">" +
+            ui.item.value + //consider putting in user entered text, using function extractLast()
+            "</span>" 
+            // + ("; ")
+            ;
+
         prev.push(spanForm);
 
         //mouse over action
-        $("body").on('mouseenter',"div.ui-widget #ac span.diagnosis",
-          function (e) {
-          $('<div />', {
-          'class': 'tip',
-          text: "ICD10: " + $(this).data('ontcode'),
-          css: {
-            position: 'fixed',
-            top: e.pageY-22,
-            left: e.pageX+2,
-            border: '1px solid red',
-            background: 'yellow'        
-          }
-          }).appendTo(this);
-          return false;
-          }
-        ).on('mouseleave',"div.ui-widget #ac span.diagnosis",
-          function (e) {
-          $('.tip',this).remove();
-          return false;
-          }
+        $("body").on('mouseenter', "div.ui-widget #ac span.diagnosis",
+            function(e) {
+                $('<div />', {
+                    'class': 'tip',
+                    text: "ICD10: " + $(this).data('ontcode'),
+                    css: {
+                        position: 'fixed',
+                        top: e.pageY - 22,
+                        left: e.pageX + 2,
+                        border: '1px solid red',
+                        background: 'yellow'
+                    }
+                }).appendTo(this);
+                return false;
+            }
+        ).on('mouseleave', "div.ui-widget #ac span.diagnosis",
+            function(e) {
+                $('.tip', this).remove();
+                return false;
+            }
         );
 
         $(this).html(prev.join("; "));
         placeCaretAtEnd($(this).get(0));
         return false;
-      }
+    }
 
-
-    $( "#ac" )
-      .on( "keydown", function( event ) {
-        if ( event.keyCode === $.ui.keyCode.TAB &&
-            $( this ).autocomplete( "instance" ).menu.active ) {
-          event.preventDefault();
-        }
-      })
-      .autocomplete({
-        source: function(request,response) {
-          $.getJSON(BP_SEARCH_SERVER +
-            "/search?q=" +  
-            encodeURI(split(request.term).pop()) +
-            "&ontologies="  +
-            encodeURI(LIST_ONTOLOGY) +
-            "&suggest=true" +
-            "&format=jsonp" +
-            "&callback=?",
-          function(data) {
-              console.log(data);
-              data = parseData(data.collection);
-              // console.log(data);
-              response(data);
+    $("#ac")
+        .on("keydown", function(event) {
+            if (event.keyCode === $.ui.keyCode.TAB &&
+                $(this).autocomplete("instance").menu.active) {
+                event.preventDefault();
             }
-          );
-        },
-        minLength: 3,
-        focus: function() {
-            return false;
-        },
-        select: formatSelect
-      }
-    );
-  });
+        })
+        .autocomplete({
+            source: function(request, response) {
+                var caretPos = getCaretCharacterOffsetWithin(this)
+                var searchTerm = request.term.substring(0,caretPos).split(/\b/).pop();
+                $.getJSON(BP_SEARCH_SERVER +
+                    "/search?q=" +
+                    // encodeURI(request.term.split(/\b/).pop()) +
+                    encodeURI(searchTerm) + 
+                    // term.split(/\b/).pop()
+                    "&ontologies=" +
+                    encodeURI(LIST_ONTOLOGY) +
+                    "&suggest=true" +
+                    "&format=jsonp" +
+                    "&callback=?",
+                    function(data) {
+                        console.log(data);
+                        data = parseData(data.collection);
+                        // console.log(data);
+                        response(data);
+                    }
+                );
+                console.log("substr: " + request.term.substring(0,caretPos));
+                console.log("search term: " + searchTerm);
+                console.log(caretPos);
+                // console.log(this.element);
+            },
+            minLength: 3,
+            focus: function() {
+                return false;
+            },
+            // change: function(event,ui) {
+
+            // }
+            // ,
+            select: formatSelect
+        });
+});

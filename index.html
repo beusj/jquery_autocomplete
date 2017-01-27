@@ -1,30 +1,44 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>jQuery UI Autocomplete - Remote datasource</title>
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  
-<!--   <link rel="stylesheet" href="/resources/demos/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jQuery UI Autocomplete - Remote datasource</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!--   <link rel="stylesheet" href="/resources/demos/style.css">
   <style>
   .ui-autocomplete-loading {
     background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
-  
+
   </style> -->
 
-  
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script src="js/bp_autocomplete.js"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!--     <script>
+        $.ui.autocomplete.filter = function( array, term ) {
+        var lastWord = term.split(/\b/).pop();
+        console.log("Last Word is: " + lastWord) //
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex( lastWord ), "i" );
+        return $.grep( array, function( value ) {
+            return matcher.test( value.label || value.value || value );
+        } )
+    };
+    </script> -->
+    <script src="js/bp_autocomplete.js"></script>
+
 </head>
+
 <body>
 
-<div class="ui-widget" style="margin-top:2em; font-family:Arial">
-  Bioportal Autocomplete:
-  <div contenteditable="true" id='ac' class="ui-widget-content" style="height: 50px;width: 500px; overflow: auto;">
-  </div>
-</div>
- 
+    <div class="ui-widget" style="margin-top:2em; font-family:Arial">
+        Bioportal Autocomplete:
+        <div contenteditable="true" id='ac' class="ui-widget-content" style="height: 50px;width: 500px; overflow: auto;">
+        </div>
+    </div>
+
 </body>
+
 </html>
