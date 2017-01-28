@@ -2,7 +2,7 @@
 //#to-do
 // - generalize to other content types
 var BP_SEARCH_SERVER = "https://data.bioontology.org";
-var LIST_ONTOLOGY = "ICD10";
+var LIST_ONTOLOGY = "SNOMEDCT";
 window.rememberText = "";
 //API Reference http://data.bioontology.org/documentation#Class
 
@@ -138,7 +138,7 @@ $(function() {
             function(e) {
                 $('<div />', {
                     'class': 'tip',
-                    text: "ICD10: " + $(this).data('ontcode'),
+                    text: "ICD10: " + $(this).data('ontcode') + "\n Name: " + decodeURI($(this)["0"].id),
                     css: {
                         position: 'fixed',
                         top: e.pageY - 22,
@@ -162,10 +162,6 @@ $(function() {
         placeCaretAtEnd($(this).get(0));
         return false;
     }
-
-    $("ac").change( function() {
-            log.console("div was changed");
-        });
 
     $("#ac")
         .on("keydown", function(event) {
@@ -230,10 +226,17 @@ $(function() {
             focus: function() {
                 return false;
             },
-            change: function(event,ui) {
-                window.rememberText = $(this).text();
-            }
-            ,
+            // change: function(event,ui) {
+            //     window.rememberText = $(this).text();
+            // }
+            // ,
             select: formatSelect
         });
+
+    //     $('span').bind('click', function() {
+    //     $(this).attr('contentEditable', true);
+    // }).blur(
+    //     function() {
+    //         $(this).attr('contentEditable', false);
+    //     });
 });
